@@ -1,0 +1,77 @@
+// Fetch all complaints from the Vercel/PostgreSQL API
+async function fetchComplaints() {
+  try {
+    const res = await fetch('/api/complaints');
+    const data = await res.json();
+    
+    // Update Stat Cards
+    document.getElementById('statTotal').innerText = data.length;
+    document.getElementById('statPending').innerText = data.filter(c => c.status === 'Pending').length;
+    document.getElementById('statInProgress').innerText = data.filter(c => c.status === 'In Progress').length;
+    document.getElementById('statResolved').innerText = data.filter(c => c.status === 'Resolved').length;
+
+    // Render Table Rows
+    const tbody = document.getElementById('complaintsTbody');
+    tbody.innerHTML = '';
+    
+    data.forEach(c => {
+      const tr = document.createElement('tr');
+      tr.className = 'hover:bg-slate-800/30 transition';
+      tr.innerHTML = `
+        <td class="p-4 font-mono text-slate-400">${c.complaint_id}</td>
+        <td class="p-4 font-medium text-white">${c.title}</td>
+        <td class="p-4">${c.category}</td>
+        <td class="p-4">${c.priority}</td>
+        <td class="p-4">${c.status}</td>
+        <td class="p-4 text-right">
+          ${currentUser && currentUser.role === 'admin' ? `
+            <select onchange="updateStatus('${c.complaint_id}', this.value)" class="bg-slate-950 border border-slate-800 rounded p-1 text-[10px]">
+              <option value="Pending" ${c.status === 'Pending' ? 'selected' : ''}>Pending</option>
+              <option value="In Progress" ${c.status === 'In Progress' ? 'selected' : ''}>In Progress</option>
+              <option value="Resolved" ${c.status === 'Resolved' ? 'selected' : ''}>Resolved</option>
+            </select>
+            <button onclick="deleteComplaint('${c.complaint_id}')" class="ml-2 text-red-400 hover:text-red-300"><i class="fa-solid fa-trash"></i></button>
+          ` : '<span class="text-slate-500">View Only</span>'}
+        </td>
+      `;
+      tbody.appendChild(tr);
+    });
+  } catch (err) {
+    console.error("Error fetching complaints:", err);
+  }
+}
+
+// Create a new complaint via POST /api/complaints
+async function handleCreate(e) {
+  e.preventDefault();
+  await fetch('/api/complaints', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      title: document.getElementById('mTitle').value,
+      category: document.getElementById('mCategory').value,
+      priority: document.getElementById('mPriority').value,
+      description: document.getElementById('mDesc').value,
+      userEmail: currentUser.email,
+      userName: currentUser.name
+    })
+  });
+  closeModal();
+  fetchComplaints();
+}
+
+// Update status via PUT /api/complaints/:id
+async function updateStatus(id, status) {
+  await fetch(`/api/complaints/${id}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ status })
+  });
+  fetchComplaints();
+}
+
+// Delete complaint via DELETE /api/complaints/:id
+async function deleteComplaint(id) {
+  await fetch(`/api/complaints/${id}`, { method: 'DELETE' });
+  fetchComplaints();
+}
