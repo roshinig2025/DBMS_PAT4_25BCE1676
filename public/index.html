@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="dark">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -30,36 +30,59 @@
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen font-sans flex flex-col antialiased">
 
-  <!-- AUTHENTICATION SCREEN -->
+  <!-- AUTHENTICATION CONTAINER (SIGN IN & SIGN UP) -->
   <div id="authContainer" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950 p-4">
     <div class="bg-slate-900 border border-slate-800 p-8 rounded-2xl shadow-2xl w-full max-w-md relative overflow-hidden">
       <div class="text-center mb-6">
         <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-blue-600/10 text-blue-500 mb-4 border border-blue-500/20">
           <i class="fa-solid fa-shield-halved text-3xl"></i>
         </div>
-        <h1 class="text-2xl font-bold text-white tracking-tight">CMS Portal</h1>
-        <p class="text-slate-400 text-xs mt-1">Complaint Management System</p>
+        <h1 class="text-2xl font-bold text-white tracking-tight" id="authTitle">Sign In to CMS</h1>
+        <p class="text-slate-400 text-xs mt-1" id="authSubtitle">Enter your credentials to access the portal</p>
       </div>
 
-      <!-- Quick Fill Bar -->
+      <!-- Quick Demo Access Bar -->
       <div class="bg-slate-950 p-2 rounded-xl border border-slate-800 mb-6 flex gap-2">
         <button onclick="quickFill('user')" class="flex-1 py-1.5 bg-slate-800 text-slate-300 text-xs rounded-lg font-medium hover:bg-slate-700 transition">Demo User</button>
         <button onclick="quickFill('admin')" class="flex-1 py-1.5 bg-slate-800 text-slate-300 text-xs rounded-lg font-medium hover:bg-slate-700 transition">Demo Admin</button>
       </div>
 
       <form onsubmit="handleAuth(event)" class="space-y-4">
+        <!-- Full Name (Only for Sign Up) -->
+        <div id="fullNameGroup" class="hidden">
+          <label class="block text-xs font-semibold text-slate-400 mb-1">Full Name</label>
+          <input type="text" id="authFullName" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-blue-500">
+        </div>
+
         <div>
           <label class="block text-xs font-semibold text-slate-400 mb-1">Email Address</label>
           <input type="email" id="authEmail" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-blue-500">
         </div>
+
         <div>
           <label class="block text-xs font-semibold text-slate-400 mb-1">Password</label>
           <input type="password" id="authPassword" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-blue-500">
         </div>
-        <button type="submit" class="w-full py-3 bg-blue-600 hover:bg-blue-500 text-white font-semibold text-xs rounded-xl transition shadow-lg shadow-blue-600/20">
+
+        <!-- Role Selector (Only for Sign Up) -->
+        <div id="roleGroup" class="hidden">
+          <label class="block text-xs font-semibold text-slate-400 mb-1">Account Role</label>
+          <select id="authRole" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-blue-500">
+            <option value="user">User (File & Track Complaints)</option>
+            <option value="admin">Admin (Manage & Resolve Complaints)</option>
+          </select>
+        </div>
+
+        <button type="submit" id="authSubmitBtn" class="w-full py-3 bg-blue-600 hover:bg-blue-500 text-white font-semibold text-xs rounded-xl transition shadow-lg shadow-blue-600/20">
           Sign In
         </button>
       </form>
+
+      <!-- Toggle Sign In / Sign Up Mode -->
+      <div class="mt-6 text-center text-xs text-slate-400 border-t border-slate-800 pt-4">
+        <span id="authToggleText">Don't have an account?</span>
+        <button onclick="toggleAuthMode()" id="authToggleBtn" class="text-blue-400 font-semibold hover:underline ml-1">Sign Up</button>
+      </div>
     </div>
   </div>
 
@@ -71,7 +94,7 @@
         <div class="p-4 border-b border-slate-800 flex items-center gap-3 mb-4">
           <i class="fa-solid fa-shield-halved text-2xl text-blue-500"></i>
           <div>
-            <h2 class="font-bold text-white text-sm">CMS Portal</h2>
+            <h2 class="font-bold text-white text-sm" id="sidebarUserName">CMS Portal</h2>
             <p class="text-[10px] text-slate-400" id="userRoleBadge">USER ROLE</p>
           </div>
         </div>
@@ -91,19 +114,19 @@
       </button>
     </aside>
 
-    <!-- MAIN CONTENT -->
+    <!-- MAIN PANEL -->
     <main class="flex-1 bg-slate-950 flex flex-col overflow-y-auto p-6">
       <header class="pb-6 border-b border-slate-800 flex items-center justify-between">
         <div>
           <h1 class="text-xl font-bold text-white" id="pageTitle">Dashboard</h1>
-          <p class="text-xs text-slate-400">Overview & Management Portal</p>
+          <p class="text-xs text-slate-400">Overview & System Statistics</p>
         </div>
         <button id="fileBtn" onclick="openModal()" class="py-2 px-4 bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold rounded-xl transition flex items-center gap-2">
           <i class="fa-solid fa-plus"></i> File Complaint
         </button>
       </header>
 
-      <!-- VIEW: DASHBOARD -->
+      <!-- VIEW: DASHBOARD & CHARTS -->
       <div id="view-dashboard" class="pt-6 space-y-6">
         <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
           <div class="bg-slate-900 border border-slate-800 p-5 rounded-2xl">
@@ -121,6 +144,21 @@
           <div class="bg-slate-900 border border-slate-800 p-5 rounded-2xl">
             <p class="text-xs font-semibold text-slate-400 mb-1">Resolved</p>
             <p class="text-2xl font-bold text-emerald-400" id="statResolved">0</p>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div class="bg-slate-900 border border-slate-800 p-5 rounded-2xl flex flex-col justify-center items-center h-64">
+            <p class="text-xs font-semibold text-slate-400 mb-4 self-start">Status Distribution</p>
+            <div class="w-full h-44 flex items-center justify-center">
+              <canvas id="statusChart"></canvas>
+            </div>
+          </div>
+          <div class="bg-slate-900 border border-slate-800 p-5 rounded-2xl flex flex-col justify-center items-center h-64">
+            <p class="text-xs font-semibold text-slate-400 mb-4 self-start">Category Breakdown</p>
+            <div class="w-full h-44 flex items-center justify-center">
+              <canvas id="categoryChart"></canvas>
+            </div>
           </div>
         </div>
       </div>
@@ -141,7 +179,7 @@
                 </tr>
               </thead>
               <tbody id="complaintsTbody" class="divide-y divide-slate-800 text-slate-300">
-                <!-- Rows injected dynamically -->
+                <!-- Data populated dynamically -->
               </tbody>
             </table>
           </div>
@@ -150,11 +188,11 @@
     </main>
   </div>
 
-  <!-- FILE COMPLAINT MODAL -->
+  <!-- MODAL: FILE COMPLAINT -->
   <div id="complaintModal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 hidden">
     <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 w-full max-w-lg shadow-2xl">
       <div class="flex justify-between items-center mb-4">
-        <h3 class="text-base font-bold text-white">File New Complaint</h3>
+        <h3 class="text-base font-bold text-white">Submit New Complaint</h3>
         <button onclick="closeModal()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
       </div>
       <form onsubmit="handleCreate(event)" class="space-y-4">
@@ -192,11 +230,27 @@
     </div>
   </div>
 
-  <!-- JAVASCRIPT SECTION -->
+  <!-- SCRIPT LOGIC -->
   <script>
+    let isSignUpMode = false;
     let currentUser = null;
+    let statusChartInstance = null;
+    let categoryChartInstance = null;
+
+    function toggleAuthMode() {
+      isSignUpMode = !isSignUpMode;
+      document.getElementById('authTitle').innerText = isSignUpMode ? 'Create an Account' : 'Sign In to CMS';
+      document.getElementById('authSubtitle').innerText = isSignUpMode ? 'Fill details to register' : 'Enter credentials to access portal';
+      document.getElementById('authSubmitBtn').innerText = isSignUpMode ? 'Sign Up' : 'Sign In';
+      document.getElementById('authToggleText').innerText = isSignUpMode ? 'Already have an account?' : "Don't have an account?";
+      document.getElementById('authToggleBtn').innerText = isSignUpMode ? 'Sign In' : 'Sign Up';
+
+      document.getElementById('fullNameGroup').classList.toggle('hidden', !isSignUpMode);
+      document.getElementById('roleGroup').classList.toggle('hidden', !isSignUpMode);
+    }
 
     function quickFill(role) {
+      if (isSignUpMode) toggleAuthMode();
       document.getElementById('authEmail').value = role === 'admin' ? 'admin@system.com' : 'user@system.com';
       document.getElementById('authPassword').value = 'pass123';
     }
@@ -204,13 +258,23 @@
     function handleAuth(e) {
       e.preventDefault();
       const email = document.getElementById('authEmail').value;
-      const role = email.includes('admin') ? 'admin' : 'user';
-      currentUser = { email, role, name: role === 'admin' ? 'System Admin' : 'Demo User' };
+      
+      let role, name;
+      if (isSignUpMode) {
+        name = document.getElementById('authFullName').value || 'New User';
+        role = document.getElementById('authRole').value;
+      } else {
+        role = email.includes('admin') ? 'admin' : 'user';
+        name = role === 'admin' ? 'System Admin' : 'Demo User';
+      }
+
+      currentUser = { email, role, name };
 
       document.getElementById('authContainer').classList.add('hidden');
       document.getElementById('appWrapper').classList.remove('hidden');
+      document.getElementById('sidebarUserName').innerText = currentUser.name;
       document.getElementById('userRoleBadge').innerText = role.toUpperCase() + ' ROLE';
-      
+
       if (role === 'admin') {
         document.getElementById('fileBtn').classList.add('hidden');
       } else {
@@ -237,16 +301,22 @@
     function openModal() { document.getElementById('complaintModal').classList.remove('hidden'); }
     function closeModal() { document.getElementById('complaintModal').classList.add('hidden'); }
 
-    // API CALLS
     async function fetchComplaints() {
       try {
         const res = await fetch('/api/complaints');
         const data = await res.json();
         
-        document.getElementById('statTotal').innerText = data.length || 0;
-        document.getElementById('statPending').innerText = data.filter(c => c.status === 'Pending').length || 0;
-        document.getElementById('statInProgress').innerText = data.filter(c => c.status === 'In Progress').length || 0;
-        document.getElementById('statResolved').innerText = data.filter(c => c.status === 'Resolved').length || 0;
+        const total = data.length || 0;
+        const pending = data.filter(c => c.status === 'Pending').length || 0;
+        const inProgress = data.filter(c => c.status === 'In Progress').length || 0;
+        const resolved = data.filter(c => c.status === 'Resolved').length || 0;
+
+        document.getElementById('statTotal').innerText = total;
+        document.getElementById('statPending').innerText = pending;
+        document.getElementById('statInProgress').innerText = inProgress;
+        document.getElementById('statResolved').innerText = resolved;
+
+        renderCharts(pending, inProgress, resolved, data);
 
         const tbody = document.getElementById('complaintsTbody');
         tbody.innerHTML = '';
@@ -281,6 +351,52 @@
       } catch (err) {
         console.error("Error fetching complaints:", err);
       }
+    }
+
+    function renderCharts(pending, inProgress, resolved, data) {
+      if (statusChartInstance) statusChartInstance.destroy();
+      if (categoryChartInstance) categoryChartInstance.destroy();
+
+      const ctxStatus = document.getElementById('statusChart').getContext('2d');
+      statusChartInstance = new Chart(ctxStatus, {
+        type: 'doughnut',
+        data: {
+          labels: ['Pending', 'In Progress', 'Resolved'],
+          datasets: [{
+            data: [pending, inProgress, resolved],
+            backgroundColor: ['#fbbf24', '#60a5fa', '#34d399'],
+            borderWidth: 0
+          }]
+        },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: '#94a3b8' } } } }
+      });
+
+      const itCount = data.filter(c => c.category === 'IT Support').length;
+      const facCount = data.filter(c => c.category === 'Facilities').length;
+      const hwCount = data.filter(c => c.category === 'Hardware').length;
+
+      const ctxCat = document.getElementById('categoryChart').getContext('2d');
+      categoryChartInstance = new Chart(ctxCat, {
+        type: 'bar',
+        data: {
+          labels: ['IT Support', 'Facilities', 'Hardware'],
+          datasets: [{
+            label: 'Complaints',
+            data: [itCount, facCount, hwCount],
+            backgroundColor: '#3b82f6',
+            borderRadius: 6
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            x: { ticks: { color: '#94a3b8' }, grid: { display: false } },
+            y: { ticks: { color: '#94a3b8' }, grid: { color: '#1e293b' } }
+          }
+        }
+      });
     }
 
     async function handleCreate(e) {
