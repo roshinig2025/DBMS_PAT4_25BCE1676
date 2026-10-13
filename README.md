@@ -46,8 +46,8 @@ A full-stack, cloud-native Complaint Management System built with a dark-themed 
 ### Running Locally
 
 1. Clone the repository:
-   git clone https://github.com/roshinig2025/PAT4_25BCE1676.git
-   cd PAT4_25BCE1676
+   git clone https://github.com/roshinig2025/DBMS_PAT4_25BCE1676.git
+   cd DBMS_PAT4_25BCE1676
 
 2. Install dependencies:
    npm install
