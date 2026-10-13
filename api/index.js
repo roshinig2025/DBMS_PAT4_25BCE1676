@@ -49,10 +49,21 @@ app.use(async (req, res, next) => {
   next();
 });
 
-// API Routes
+// API ROUTES
 app.get('/api/complaints', async (req, res) => {
+  const { userEmail, role } = req.query;
   try {
-    const result = await pool.query('SELECT * FROM complaints ORDER BY complaint_id DESC');
+    let result;
+    // If the account is a regular user, filter complaints by their email
+    if (role === 'user' && userEmail) {
+      result = await pool.query(
+        'SELECT * FROM complaints WHERE user_email = $1 ORDER BY complaint_id DESC',
+        [userEmail]
+      );
+    } else {
+      // Admin sees all complaints
+      result = await pool.query('SELECT * FROM complaints ORDER BY complaint_id DESC');
+    }
     res.json(result.rows);
   } catch (err) {
     res.status(500).json({ error: err.message });
